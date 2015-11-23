@@ -20,6 +20,7 @@
 package com.webtrends.harness.component.spray.route
 
 import com.webtrends.harness.command.CommandException
+import com.webtrends.harness.component.spray.command.SprayCommandException
 import org.slf4j.LoggerFactory
 import spray.http.StatusCodes._
 import spray.routing.{AuthenticationFailedRejection, RejectionHandler, Directives, ExceptionHandler}
@@ -33,6 +34,9 @@ trait CommandRouteHandler extends Directives {
   private val externalLogger = LoggerFactory.getLogger(this.getClass)
 
   def exceptionHandler = handleExceptions(ExceptionHandler({
+    case sce: SprayCommandException =>
+      externalLogger.debug(sce.getMessage, sce)
+      complete(sce.status, s"Command Exception - ${sce.getMessage}\n\t${sce.toString}")
     case ce:CommandException =>
       externalLogger.debug(ce.getMessage, ce)
       complete(BadRequest, s"Command Exception - ${ce.getMessage}\n\t${ce.toString}")
